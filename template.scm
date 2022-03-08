@@ -12,8 +12,16 @@
 
 (define (filesize path) (stat:size (stat path)))
 
+(define (thumb-path img-path)
+  (string-append "thumb/" (substring img-path 4)))
+
+(define (thumb-gen img-path)
+  (let ((out-path (thumb-path img-path)))
+    (system (string-append "gm convert -size 512x512 " img-path " -quality 60 -resize 512x512 +profile \"*\" " out-path))
+    out-path))
+
 (define (baseSF path) path)
-(define (baseSFS path) path)
+(define (baseSFS path) (thumb-gen path))
 (define (hyper text)
 	(let* ((tlen (string-length text)) (f 0.0) (i 0))
   (apply string-append (map (λ (v)
@@ -101,6 +109,7 @@
     (if (valid-tag-list? lst 0) (apply string-append (eval-list-tags (build-string-list str lst 0))) str)))
 
 (define (build)
+  (when (not (file-exists? "thumb")) (mkdir "thumb"))
   (write-all "index.html" (html-eval (read-all "template.html"))))
 
 (build)
